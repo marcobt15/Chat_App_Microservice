@@ -1,0 +1,31 @@
+services:
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: microservice_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./schemas/messages.sql:/docker-entrypoint-initdb.d/messages.sql  # Mount the SQL file
+    networks:
+      - backend
+
+  server:
+    build: .
+    depends_on:
+      - db
+    ports:
+      - "8080:8080"
+    networks:
+      - backend
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@db:5432/microservice_db
+      RUST_BACKTRACE: 1
+      RUST_LOG: microservice=debug
+
+networks:
+  backend:
+
+volumes:
+  postgres_data:
